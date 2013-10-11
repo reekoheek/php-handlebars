@@ -1,0 +1,21 @@
+{
+    "name": "reekoheek/handlebars",
+    "require-dev": {
+        "phpunit/phpunit": "3.7.22"
+    },
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Jafar Shadiq",
+            "email": "reekoheek@gmail.com"
+        }
+    ],
+    "require": {
+
+    },
+    "autoload": {
+        "psr-0": {
+            "Handlebars": "src/"
+        }
+    }
+}
