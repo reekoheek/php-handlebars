@@ -96,7 +96,7 @@ class Compiler {
      *
      * @return string
      */
-    public function compile($context)
+    public function compile($context = array())
     {
         if (!$context instanceof Context) {
             $context = new Context($context);
@@ -207,6 +207,7 @@ class Compiler {
     {
         $helpers = $this->handlebars->getHelpers();
         $sectionName = $current[Lexer::NAME];
+
         if ($helpers->has($sectionName)) {
             if (isset($current[Lexer::END])) {
                 $source = substr(
@@ -219,7 +220,7 @@ class Compiler {
             }
             $params = array(
                 $this,  //First argument is this template
-                $context, //Secound is current context
+                $context, //Second is current context
                 $current[Lexer::ARGS],  //Arguments
                 $source
                 );
@@ -234,7 +235,7 @@ class Compiler {
             try {
                 $sectionVar = $context->get($sectionName, true);
             } catch (InvalidArgumentException $e) {
-                throw new RuntimeException($sectionName . ' is not registered as a helper');
+                throw new \RuntimeException($sectionName . ' is not registered as a helper');
             }
             $buffer = '';
             if (is_array($sectionVar) || $sectionVar instanceof Traversable) {
@@ -253,7 +254,7 @@ class Compiler {
             }
             return $buffer;
         } else {
-            throw new RuntimeException($sectionName . ' is not registered as a helper');
+            throw new \RuntimeException($sectionName . ' is not registered as a helper');
         }
     }
 
@@ -305,14 +306,30 @@ class Compiler {
      *
      * @return string the result
      */
-    private function _variables($context, $current, $escaped)
-    {
-        $value = $context->get($current[Lexer::NAME]);
-        if ($escaped) {
-            $args = $this->handlebars->getEscapeArgs();
-            array_unshift($args, $value);
-            $value = call_user_func_array($this->handlebars->getEscape(), array_values($args));
+    private function _variables($context, $current, $escaped) {
+
+        $helpers = $this->handlebars->getHelpers();
+
+        if (empty($current[Lexer::ARGS])) {
+            $name = (is_array($current)) ? $current[Lexer::NAME] : $current;
+            $value = $context->get($name);
+            if ($escaped) {
+                $args = $this->handlebars->getEscapeArgs();
+                array_unshift($args, $value);
+                $value = call_user_func_array($this->handlebars->getEscape(), array_values($args));
+            }
+            return $value;
+        } elseif ($helpers->has($current[Lexer::NAME])) {
+            $fn = $helpers->get($current[Lexer::NAME]);
+
+            $preparedArgs = array();
+            $args = explode(' ', $current[Lexer::ARGS]);
+            foreach ($args as $arg) {
+                if ($arg === '') continue;
+                $preparedArgs[] = $this->_variables($context, $arg, false);
+            }
+            return $fn->call($preparedArgs);
         }
-        return $value;
+
     }
 }

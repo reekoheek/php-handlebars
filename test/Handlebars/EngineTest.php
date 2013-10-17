@@ -24,34 +24,8 @@ class EngineTest extends \PHPUnit_Framework_TestCase {
         $this->assertTrue(is_callable($fn));
 
         $result = $fn();
-        var_dump($result);
 
         $this->assertEquals($result, "Hello World");
-    }
-
-    public function testCompileParsableString() {
-        $fn = $this->engine->compile("Hello World {{name}}");
-
-        $this->assertTrue(is_callable($fn));
-
-        $result = $fn(array( 'name' => 'reekoheek' ));
-
-        $this->assertEquals($result, "Hello World reekoheek");
-    }
-
-    public function testCompileWithHelper() {
-
-        $this->engine->registerHelper('sayMyName', function() {
-            return "reekoheek";
-        });
-
-        $fn = $this->engine->compile("Hello World {{{ sayMyName 'Mr' }}}");
-
-        $this->assertTrue(is_callable($fn));
-
-        $result = $fn();
-
-        $this->assertEquals("Hello World reekoheek", $result);
     }
 
 }

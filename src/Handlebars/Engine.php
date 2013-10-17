@@ -18,22 +18,10 @@ class Engine {
     private $_escapeArgs = array ( ENT_COMPAT, 'UTF-8' );
     private $_escape = 'htmlspecialchars';
 
-    protected $helpers = array();
-    protected $lexer;
-    protected $parser;
+    protected $helpers;
 
-    private function getLexer() {
-        if (!$this->lexer) {
-            $this->lexer = new Lexer();
-        }
-        return $this->lexer;
-    }
-
-    private function getParser() {
-        if (!$this->parser) {
-            $this->parser = new Parser();
-        }
-        return $this->parser;
+    public function __construct() {
+        $this->helpers = new Helpers();
     }
 
     public function compile($input, $options = array()) {
@@ -41,8 +29,10 @@ class Engine {
             throw new HandlebarsException('Cannot compile template: ' . json_encode($input));
         }
 
-        $tokens = $this->getLexer()->tokenize($input);
-        $ast = $this->getParser()->parse($tokens);
+        $lexer = new Lexer();
+        $parser = new Parser();
+        $tokens = $lexer->tokenize($input);
+        $ast = $parser->parse($tokens);
 
         $compiler = new Compiler($this, $ast, $options);
 
@@ -52,40 +42,18 @@ class Engine {
     }
 
     public function registerHelper($name, $fn = NULL, $inverse = false) {
-        if (is_string($name)) {
-            $this->helpers[$name] = array(
-                'not' => $inverse,
-                'callback' => $fn,
-            );
-        } elseif (is_array($name)) {
-            $helpers = $name;
-            foreach($helpers as $name => $helper) {
-                if (is_array($helper) && isset($helper['callback']) && is_callable($helper['callback'])) {
-                    $this->helpers[$name] = $helper;
-                } else {
-                    $this->helpers[$name] = array(
-                        'not' => false,
-                        'callback' => $helper,
-                    );
-                }
-            }
-        } else {
-            throw new HandlebarsException('Cannot register helper name: '.json_encode($name));
-        }
+        $this->helpers->register($name, $fn, $inverse);
     }
 
-    public function getHelpers()
-    {
+    public function getHelpers() {
         return $this->helpers;
     }
 
-    public function getEscapeArgs()
-    {
+    public function getEscapeArgs() {
         return $this->_escapeArgs;
     }
 
-    public function getEscape()
-    {
+    public function getEscape() {
         return $this->_escape;
     }
 }

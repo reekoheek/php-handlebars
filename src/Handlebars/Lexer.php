@@ -73,8 +73,7 @@ class Lexer {
      *
      * @return array Set of Mustache tokens
      */
-    public function tokenize($text, $delimiters = null)
-    {
+    public function tokenize($text, $delimiters = null) {
         // if ($text instanceof String) {
         //     $text = $text->getString();
         // }
@@ -130,17 +129,19 @@ class Lexer {
                 if ($this->tagChange($this->ctag, $text, $i)) {
                     // Sections (Helpers) can accept parameters
                     // Same thing for Partials (little known fact)
-                    if (
-                        ($this->tagType == self::T_SECTION)
-                        || ($this->tagType == self::T_PARTIAL)
-                        || ($this->tagType == self::T_PARTIAL_2)
-                    ) {
+                    if ($this->tagType != self::T_COMMENT) {
+                    // if (
+                    //     ($this->tagType == self::T_SECTION)
+                    //     || ($this->tagType == self::T_PARTIAL)
+                    //     || ($this->tagType == self::T_PARTIAL_2)
+                    // ) {
                         $newBuffer = explode(' ', trim($this->buffer), 2);
                         $args = '';
                         if (count($newBuffer) == 2) {
                             $args = $newBuffer[1];
                         }
                         $this->buffer = $newBuffer[0];
+                    // }
                     }
                     $t = array(
                         self::TYPE  => $this->tagType,
@@ -177,7 +178,7 @@ class Lexer {
         }
 
         $this->filterLine(true);
-
+        // var_dump($this->tokens);
         return $this->tokens;
     }
 

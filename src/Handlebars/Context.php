@@ -76,7 +76,7 @@ class Context
      * @param boolean $strict       strict search? if not found then throw exception
      *
      * @return mixed
-     * @throw InvalidArgumentException in strict mode and variable not found
+     * @throw \InvalidArgumentException in strict mode and variable not found
      */
     public function get($variableName, $strict = false)
     {
@@ -89,7 +89,7 @@ class Context
         }
         if (count($this->stack) < $level) {
             if ($strict) {
-                throw new InvalidArgumentException('can not find variable in context');
+                throw new \InvalidArgumentException('can not find variable in context');
             }
             return '';
         }
@@ -101,7 +101,7 @@ class Context
         $current = current($this->stack);
         if (!$variableName) {
             if ($strict) {
-                throw new InvalidArgumentException('can not find variable in context');
+                throw new \InvalidArgumentException('can not find variable in context');
             }
             return '';
         } elseif ($variableName == '.' || $variableName == 'this') {
@@ -126,10 +126,15 @@ class Context
      * @param boolean $strict   strict search? if not found then throw exception
      *
      * @return boolean true if exist
-     * @throw InvalidArgumentException in strict mode and variable not found
+     * @throw \InvalidArgumentException in strict mode and variable not found
      */
     private function _findVariableInContext($variable, $inside, $strict = false)
     {
+
+        if ($inside[0] == '[') {
+            $inside = substr($inside, 1, strlen($inside) - 2);
+        }
+
         $value = '';
         if ( empty( $inside ) || ( $inside == 'this' ) ) {
             return $variable;
@@ -146,7 +151,7 @@ class Context
         } elseif ($inside === '.') {
             $value = $variable;
         } elseif ($strict) {
-            throw new InvalidArgumentException('can not find variable in context');
+            throw new \InvalidArgumentException('can not find variable in context');
         }
         return $value;
     }
